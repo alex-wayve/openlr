@@ -126,13 +126,13 @@ pub fn shortest_path_location<G: DirectedGraph>(
             return Ok(ShortestPath::Location);
         }
 
-        if let Some(loop_index) = origin_loop_index
-            && intermediator.last_edge_index == loop_index
-        {
-            // the loop ending at origin has been completely followed
-            return Ok(ShortestPath::Intermediate(Intermediate {
-                location_index: loop_index + 1,
-            }));
+        if let Some(loop_index) = origin_loop_index {
+            if intermediator.last_edge_index == loop_index {
+                // the loop ending at origin has been completely followed
+                return Ok(ShortestPath::Intermediate(Intermediate {
+                    location_index: loop_index + 1,
+                }));
+            }
         }
 
         // check if we already know a cheaper way to get to the end of this path from the origin

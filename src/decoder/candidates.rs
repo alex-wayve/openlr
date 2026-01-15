@@ -388,11 +388,11 @@ fn rate_line<EdgeId: Debug + Copy>(
     lrp: Point,
     line: ProvisionalCandidateLine<EdgeId>,
 ) -> Option<CandidateLine<EdgeId>> {
-    if let Some(path) = &lrp.path
-        && !line.frc.is_within_variance(&path.lfrcnp)
-    {
-        trace!("Candidate FRC variance out of bounds: {line}");
-        return None;
+    if let Some(path) = &lrp.path {
+        if !line.frc.is_within_variance(&path.lfrcnp) {
+            trace!("Candidate FRC variance out of bounds: {line}");
+            return None;
+        }
     }
 
     if line.bearing.difference(&lrp.line.bearing) > config.max_bearing_difference {

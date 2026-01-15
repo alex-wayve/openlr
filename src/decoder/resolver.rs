@@ -210,10 +210,10 @@ fn resolve_candidate_route<G: DirectedGraph>(
             return Ok(None);
         }
 
-        if !lrp2.is_last()
-            && let Some(last_edge) = path.edges.pop()
-        {
-            path.length -= graph.get_edge_length(last_edge)?;
+        if !lrp2.is_last() {
+            if let Some(last_edge) = path.edges.pop() {
+                path.length -= graph.get_edge_length(last_edge)?;
+            }
         }
 
         debug_assert!(!path.edges.is_empty());
@@ -298,13 +298,14 @@ fn resolve_top_k_candidate_pairs<EdgeId: Debug + Copy + PartialEq>(
         for &line_lrp2 in &lines_lrp2.lines {
             // discard the candidate line pair when there are multiple top K candidates and the best
             // single line edge exists but was previously not considered valid to form the route
-            if let Some(best_edge) = best_single_line_edge
-                && k_size > 1
-                && line_lrp1.edge == line_lrp2.edge
-                && line_lrp1.edge == best_edge
-            {
-                debug!("Discarding best single line edge {best_edge:?} from top K candidates");
-                continue;
+            if let Some(best_edge) = best_single_line_edge {
+                if k_size > 1
+                    && line_lrp1.edge == line_lrp2.edge
+                    && line_lrp1.edge == best_edge
+                {
+                    debug!("Discarding best single line edge {best_edge:?} from top K candidates");
+                    continue;
+                }
             }
 
             let candidate_pair = CandidateLinePair {
@@ -335,10 +336,12 @@ fn resolve_top_k_candidate_pairs<EdgeId: Debug + Copy + PartialEq>(
                 .or_default()
                 .push(candidate_pair);
 
-            if let Some(pairs) = rating_pairs.get_mut(&worst_rating)
-                && pairs.len() > 1
-            {
-                pairs.pop();
+            if let Some(pairs) = rating_pairs.get_mut(&worst_rating) {
+                if pairs.len() > 1 {
+                    pairs.pop();
+                } else {
+                    rating_pairs.remove(&worst_rating);
+                }
             } else {
                 rating_pairs.remove(&worst_rating);
             }

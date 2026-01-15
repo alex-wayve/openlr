@@ -1,7 +1,7 @@
 [package]
 name = "openlr"
 version = "0.4.0"
-edition = "2024"
+edition = "2021"
 description = "OpenLR Rust implementation"
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/geopinionated/openlr"
@@ -20,7 +20,7 @@ thiserror = "2.0"
 tracing = "0.1"
 
 [dev-dependencies]
-geo = "0.32"
+geo = "0.30"
 geojson = "0.24"
 graph = "0.3"
 rayon = "=1.10.0" # https://github.com/neo4j-labs/graph/issues/138

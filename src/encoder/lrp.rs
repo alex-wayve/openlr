@@ -196,21 +196,25 @@ impl<EdgeId: Copy + Debug> LocRefPoints<EdgeId> {
         debug!("Trimming {} LRPs", self.lrps.len());
 
         self.lrps.reverse();
-        while let Some(lrp) = self.lrps.last()
-            && self.pos_offset >= lrp.point.dnp()
-        {
-            trace!("Trimming front {} {}", self.pos_offset, lrp.point.dnp());
-            self.pos_offset -= lrp.point.dnp();
-            self.lrps.pop();
+        while let Some(lrp) = self.lrps.last() {
+            if self.pos_offset >= lrp.point.dnp() {
+                trace!("Trimming front {} {}", self.pos_offset, lrp.point.dnp());
+                self.pos_offset -= lrp.point.dnp();
+                self.lrps.pop();
+            } else {
+                break;
+            }
         }
         self.lrps.reverse();
 
-        while let Some(lrp) = self.lrps.iter().rev().nth(1)
-            && self.neg_offset >= lrp.point.dnp()
-        {
-            trace!("Trimming back {} {}", self.neg_offset, lrp.point.dnp());
-            self.neg_offset -= lrp.point.dnp();
-            self.lrps.pop();
+        while let Some(lrp) = self.lrps.iter().rev().nth(1) {
+            if self.neg_offset >= lrp.point.dnp() {
+                trace!("Trimming back {} {}", self.neg_offset, lrp.point.dnp());
+                self.neg_offset -= lrp.point.dnp();
+                self.lrps.pop();
+            } else {
+                break;
+            }
         }
 
         if self.lrps.len() < 2 {
@@ -219,15 +223,15 @@ impl<EdgeId: Copy + Debug> LocRefPoints<EdgeId> {
 
         let mut lrps_rev = self.lrps.iter_mut().rev();
 
-        if let Some(last_lrp) = lrps_rev.next().filter(|lrp| !lrp.point.is_last())
-            && let Some(&last_edge) = lrps_rev.next().and_then(|lrp| lrp.edges.last())
-        {
-            // the last LRP was trimmed: update the remaining one to become the last LRP
-            *last_lrp = if let Some(coordinate) = last_lrp.projection_coordinate {
-                LocRefPoint::last_line(config, graph, last_edge, coordinate)?
-            } else {
-                LocRefPoint::last_node(config, graph, last_edge)?
-            };
+        if let Some(last_lrp) = lrps_rev.next().filter(|lrp| !lrp.point.is_last()) {
+            if let Some(&last_edge) = lrps_rev.next().and_then(|lrp| lrp.edges.last()) {
+                // the last LRP was trimmed: update the remaining one to become the last LRP
+                *last_lrp = if let Some(coordinate) = last_lrp.projection_coordinate {
+                    LocRefPoint::last_line(config, graph, last_edge, coordinate)?
+                } else {
+                    LocRefPoint::last_node(config, graph, last_edge)?
+                };
+            }
         }
 
         Ok(self)

@@ -962,8 +962,8 @@ mod tests {
                     edges: vec![EdgeId(16218)],
                     point: Point {
                         coordinate: Coordinate {
-                            lon: 13.455676,
-                            lat: 52.515561
+                            lon: 13.455676767654381,
+                            lat: 52.5155615984457
                         },
                         line: LineAttributes {
                             frc: Frc::Frc2,
@@ -984,8 +984,8 @@ mod tests {
                     edges: vec![EdgeId(16218)],
                     point: Point {
                         coordinate: Coordinate {
-                            lon: 13.457137,
-                            lat: 52.515407
+                            lon: 13.457137508978576,
+                            lat: 52.51540708300186
                         },
                         line: LineAttributes {
                             frc: Frc::Frc2,
@@ -1020,13 +1020,13 @@ mod tests {
                 LocRefPoint {
                     projection_coordinate: Some(Coordinate {
                         lon: 13.458844359049749,
-                        lat: 52.515229693289946,
+                        lat: 52.51522969328994,
                     },),
                     edges: vec![EdgeId(16219)],
                     point: Point {
                         coordinate: Coordinate {
-                            lon: 13.458844,
-                            lat: 52.515229
+                            lon: 13.458844359049749,
+                            lat: 52.51522969328994
                         },
                         line: LineAttributes {
                             frc: Frc::Frc2,
@@ -1035,7 +1035,7 @@ mod tests {
                         },
                         path: Some(PathAttributes {
                             lfrcnp: Frc::Frc2,
-                            dnp: Length::from_meters(8.884732961834075)
+                            dnp: Length::from_meters(8.88473296170055)
                         })
                     }
                 },

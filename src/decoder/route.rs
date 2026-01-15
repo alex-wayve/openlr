@@ -36,7 +36,7 @@ impl<EdgeId> DerefMut for CandidateRoutes<EdgeId> {
 }
 
 impl<EdgeId: Debug + Copy + PartialEq> CandidateRoutes<EdgeId> {
-    pub fn edges(&self) -> impl DoubleEndedIterator<Item = EdgeId> {
+    pub fn edges(&self) -> impl DoubleEndedIterator<Item = EdgeId> + use<'_, EdgeId> {
         self.0.iter().flat_map(|r| &r.path.edges).copied()
     }
 

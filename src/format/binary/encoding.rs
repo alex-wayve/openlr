@@ -309,7 +309,13 @@ impl GridSize {
 }
 
 const fn signum(value: f64) -> f64 {
-    if value == 0.0 { 0.0 } else { value.signum() }
+    if value == 0.0 {
+        0.0
+    } else if value > 0.0 {
+        1.0
+    } else {
+        -1.0
+    }
 }
 
 #[cfg(test)]

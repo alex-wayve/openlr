@@ -53,10 +53,10 @@ fn edge_forward_expansion<G: DirectedGraph>(
 
         match resolve_edge_expansion(config, graph, line, offset, &expansion, edge, candidates)? {
             Some((e, length)) => {
-                if let Some(last_edge) = expansion.edges.last()
-                    && graph.is_turn_restricted(*last_edge, e)?
-                {
-                    return Ok(Path::default());
+                if let Some(last_edge) = expansion.edges.last() {
+                    if graph.is_turn_restricted(*last_edge, e)? {
+                        return Ok(Path::default());
+                    }
                 }
 
                 expansion.edges.push(e);
@@ -68,10 +68,10 @@ fn edge_forward_expansion<G: DirectedGraph>(
         };
     }
 
-    if let Some(&e) = expansion.edges.first()
-        && graph.is_turn_restricted(edge, e)?
-    {
-        return Ok(Path::default());
+    if let Some(&e) = expansion.edges.first() {
+        if graph.is_turn_restricted(edge, e)? {
+            return Ok(Path::default());
+        }
     }
 
     Ok(expansion)
@@ -94,10 +94,10 @@ fn edge_backward_expansion<G: DirectedGraph>(
 
         match resolve_edge_expansion(config, graph, line, offset, &expansion, edge, candidates)? {
             Some((e, length)) => {
-                if let Some(last_edge) = expansion.edges.last()
-                    && graph.is_turn_restricted(e, *last_edge)?
-                {
-                    return Ok(Path::default());
+                if let Some(last_edge) = expansion.edges.last() {
+                    if graph.is_turn_restricted(e, *last_edge)? {
+                        return Ok(Path::default());
+                    }
                 }
 
                 expansion.edges.push(e);
@@ -111,10 +111,10 @@ fn edge_backward_expansion<G: DirectedGraph>(
 
     expansion.edges.reverse();
 
-    if let Some(&e) = expansion.edges.last()
-        && graph.is_turn_restricted(e, edge)?
-    {
-        return Ok(Path::default());
+    if let Some(&e) = expansion.edges.last() {
+        if graph.is_turn_restricted(e, edge)? {
+            return Ok(Path::default());
+        }
     }
 
     Ok(expansion)
