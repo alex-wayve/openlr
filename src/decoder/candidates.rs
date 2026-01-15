@@ -149,7 +149,9 @@ where
                 })
                 .collect();
 
-            debug_assert!(nodes.is_sorted_by_key(|n| n.distance_to_lrp));
+            debug_assert!(nodes
+                .windows(2)
+                .all(|w| w[0].distance_to_lrp <= w[1].distance_to_lrp));
             Ok::<_, G::Error>(CandidateNodes { lrp, nodes })
         })
         .collect::<Result<_, _>>()?;
@@ -439,7 +441,7 @@ mod tests {
     use test_log::test;
 
     use super::*;
-    use crate::graph::tests::{EdgeId, NETWORK_GRAPH, NetworkGraph, VertexId};
+    use crate::graph::tests::{EdgeId, NetworkGraph, VertexId, NETWORK_GRAPH};
     use crate::{Coordinate, LineAttributes, PathAttributes};
 
     #[test]

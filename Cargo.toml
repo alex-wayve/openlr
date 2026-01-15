@@ -20,9 +20,10 @@ thiserror = "2.0"
 tracing = "0.1"
 
 [dev-dependencies]
-geo = "0.30"
+geo = "0.28"
 geojson = "0.24"
 graph = "0.3"
-rayon = "=1.10.0" # https://github.com/neo4j-labs/graph/issues/138
+rayon = "=1.10.0"                                    # https://github.com/neo4j-labs/graph/issues/138
 rstar = "0.12"
+spade = "=2.13.0"                                    # Pin older version compatible with Rust 1.81
 test-log = { version = "0.2", features = ["trace"] }

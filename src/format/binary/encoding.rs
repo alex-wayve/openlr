@@ -27,7 +27,7 @@ impl EncodedAttributes {
         self
     }
 
-    pub(crate) const fn with_offsets(mut self, offsets: &Offsets) -> Self {
+    pub(crate) fn with_offsets(mut self, offsets: &Offsets) -> Self {
         self.lfrcnp_or_flags = offsets.into_byte();
         self
     }
@@ -240,7 +240,7 @@ impl Offset {
 }
 
 impl Offsets {
-    pub(crate) const fn into_byte(self) -> u8 {
+    pub(crate) fn into_byte(self) -> u8 {
         let pos = ((self.pos.range() > 0.0) as u8) << 1;
         let neg = (self.neg.range() > 0.0) as u8;
         pos + neg
@@ -308,7 +308,7 @@ impl GridSize {
     }
 }
 
-const fn signum(value: f64) -> f64 {
+fn signum(value: f64) -> f64 {
     if value == 0.0 {
         0.0
     } else if value > 0.0 {

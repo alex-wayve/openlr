@@ -368,9 +368,10 @@ fn resolve_top_k_candidate_pairs<EdgeId: Debug + Copy + PartialEq>(
 
     debug_assert!(rating_pairs.is_empty());
     debug_assert!(candidates.len() <= k_size);
-    debug_assert!(
-        candidates.is_sorted_by_key(|pair| Reverse(pair.rating(config.same_line_degradation)))
-    );
+    debug_assert!(candidates
+        .windows(2)
+        .all(|w| w[0].rating(config.same_line_degradation)
+            >= w[1].rating(config.same_line_degradation)));
     candidates
 }
 

@@ -1,10 +1,8 @@
 use std::collections::{HashMap, HashSet};
 use std::sync::LazyLock;
 
-use geo::{
-    BoundingRect, Closest, Distance, Haversine, HaversineClosestPoint, InterpolatableLine,
-    LineString, Point,
-};
+use geo::{BoundingRect, Closest, HaversineClosestPoint, LineString, Point};
+use geo::algorithm::{HaversineBearing, HaversineDistance, HaversineIntermediate, HaversineLength};
 use graph::prelude::{DirectedCsrGraph, DirectedNeighborsWithValues};
 use rstar::{AABB, PointDistance, RTree, RTreeObject};
 use thiserror::Error;
@@ -63,7 +61,7 @@ impl RTreeObject for GeospatialNode {
 impl PointDistance for GeospatialNode {
     fn distance_2(&self, destination: &Point) -> f64 {
         let origin = Point::new(self.coordinate.lon, self.coordinate.lat);
-        Haversine.distance(origin, *destination).powf(2.0)
+        origin.haversine_distance(destination).powf(2.0)
     }
 }
 
@@ -88,7 +86,7 @@ impl PointDistance for GeospatialEdge {
     fn distance_2(&self, point: &Point) -> f64 {
         use Closest::*;
         match self.geometry.haversine_closest_point(point) {
-            SinglePoint(p) | Intersection(p) => Haversine.distance(p, *point).powf(2.0),
+            SinglePoint(p) | Intersection(p) => p.haversine_distance(point).powf(2.0),
             Indeterminate => f64::INFINITY,
         }
     }
@@ -246,17 +244,16 @@ impl DirectedGraph for NetworkGraph {
         for line in self.edge_line_string(edge).lines() {
             match line.haversine_closest_point(&point) {
                 Closest::SinglePoint(p) | Closest::Intersection(p) => {
-                    let distance_to_line = Haversine.distance(point, p);
+                    let distance_to_line = point.haversine_distance(&p);
 
                     if distance_to_line < closest_distance {
                         // this is the closest line segment of the whole geometry (so far)
                         closest_distance = distance_to_line;
-                        let distance = Haversine.distance(line.start_point(), p);
+                        let distance = line.start_point().haversine_distance(&p);
                         distance_along_edge = distance_acc + distance;
                     }
 
-                    use geo::Length;
-                    distance_acc += Haversine.length(&line);
+                    distance_acc += line.haversine_length();
                 }
                 Closest::Indeterminate => panic!("Cannot project {coordinate:?} onto {edge:?}"),
             }
@@ -270,16 +267,37 @@ impl DirectedGraph for NetworkGraph {
         edge: Self::EdgeId,
         distance: Length,
     ) -> Result<Coordinate, Self::Error> {
-        let ratio = distance.meters() / self.get_edge_length(edge)?.meters();
-
+        let target_distance = distance.meters();
         let geometry = self.edge_line_string(edge);
-        let point = geometry
-            .point_at_ratio_from_start(&Haversine, ratio)
-            .unwrap();
-
+        
+        // Walk along the line segments to find the point at the target distance
+        let mut accumulated_distance = 0.0;
+        let points: Vec<_> = geometry.points().collect();
+        
+        for window in points.windows(2) {
+            let p1 = window[0];
+            let p2 = window[1];
+            let segment_length = p1.haversine_distance(&p2);
+            
+            if accumulated_distance + segment_length >= target_distance {
+                // The target point is on this segment
+                let remaining = target_distance - accumulated_distance;
+                let ratio = remaining / segment_length;
+                let point = p1.haversine_intermediate(&p2, ratio);
+                return Ok(Coordinate {
+                    lon: point.x(),
+                    lat: point.y(),
+                });
+            }
+            
+            accumulated_distance += segment_length;
+        }
+        
+        // If we get here, return the last point
+        let last = points.last().unwrap();
         Ok(Coordinate {
-            lon: point.x(),
-            lat: point.y(),
+            lon: last.x(),
+            lat: last.y(),
         })
     }
 
@@ -299,10 +317,7 @@ impl DirectedGraph for NetworkGraph {
         let c2 = self.get_coordinate_along_edge(edge, distance_end)?;
         let p2 = Point::new(c2.lon, c2.lat);
 
-        let degrees = {
-            use geo::Bearing;
-            Haversine.bearing(p1, p2).round() as u16
-        };
+        let degrees = p1.haversine_bearing(p2).round() as u16;
 
         Ok(Bearing::from_degrees(degrees))
     }
@@ -816,7 +831,7 @@ fn network_graph_nearest_edges() {
             (edge, distance)
         })
         .collect();
-    assert!(edges.is_sorted_by_key(|(_, d)| *d));
+    assert!(edges.windows(2).all(|w| w[0].1 <= w[1].1));
 
     // lines with both directions have the same distance, sort by edge ID to make it deterministic
     let mut edges = edges.into_iter().map(|(e, _)| e).collect::<Vec<_>>();

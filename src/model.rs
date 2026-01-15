@@ -542,7 +542,7 @@ impl Offset {
         Self(range)
     }
 
-    pub const fn from_bucket(bucket_index: u8) -> Self {
+    pub fn from_bucket(bucket_index: u8) -> Self {
         Self::from_range((bucket_index as f64 + 0.5) / Self::BUCKETS)
     }
 
